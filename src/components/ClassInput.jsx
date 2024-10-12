@@ -8,13 +8,16 @@ class ClassInput extends Component {
     this.state = {
       todos: ['Just some demo tasks', 'As an example'],
       inputVal: '',
+      editIndex: null,
+      editVal: '',
     };
 
     this.handleInputChange = this.handleInputChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleDel = this.handleDel.bind(this);
-    // this.handleEdit = this.handleEdit.bind(this);
-    // this.handleResubmit = this.handleResubmit.bind(this);
+    this.handleEdit = this.handleEdit.bind(this);
+    this.handleEditInput = this.handleEditInput.bind(this);
+    this.handleResubmit = this.handleResubmit.bind(this);
   }
 
   handleInputChange(e) {
@@ -27,6 +30,7 @@ class ClassInput extends Component {
   handleSubmit(e) {
     e.preventDefault();
     this.setState((state) => ({
+      ...state,
       todos: state.todos.concat(state.inputVal),
       inputVal: '',
     }));
@@ -38,6 +42,38 @@ class ClassInput extends Component {
       ...state,
       todos: state.todos.filter(item => item !== delItem)
     }));
+  }
+
+  handleEdit(e) {
+    const selected = e.target.id;
+    this.setState((state) => ({
+      ...state,
+      editIndex: state.todos.indexOf(selected),
+      editVal: selected,
+    }));
+  }
+
+  handleEditInput(e) {
+    this.setState((state) => ({
+      ...state,
+      editVal: e.target.value,
+    }));
+  }
+
+  handleResubmit(e) {
+    e.preventDefault();
+
+    this.setState((state) => {
+      const newTodos = [...state.todos]
+      newTodos[state.editIndex] = state.editVal;
+
+      return {
+        ...state,
+        todos: newTodos,
+        editIndex: null,
+        editVal: '',
+      }
+    });
   }
 
   render() {
@@ -62,10 +98,21 @@ class ClassInput extends Component {
         {/* The list of all the To-Do's, displayed */}
         <ul>
           {this.state.todos.map((todo) => (
-            <li key={todo}>
-              {todo}
-              <button id={todo} onClick={this.handleDel}>X</button>
-            </li>
+            this.state.todos.indexOf(todo) === this.state.editIndex ? (
+              <form key={todo} onSubmit={this.handleResubmit}>
+                <input
+                  value={this.state.editVal}
+                  onChange={this.handleEditInput}
+                />
+                <button type="submit">Resubmit</button>
+              </form>
+            ) : (
+              <li key={todo}>
+                {todo}
+                <button id={todo} onClick={this.handleEdit}>Edit</button>
+                <button id={todo} onClick={this.handleDel}>X</button>
+              </li>
+            )
           ))}
         </ul>
       </section>
